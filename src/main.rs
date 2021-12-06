@@ -1,4 +1,5 @@
 use num::Complex;
+use rayon::prelude::*;
 
 /// Try to determine if 'c' is in the mandelbrot set, using at most 'limit'
 /// iterations to decide.
@@ -8,7 +9,7 @@ use num::Complex;
 /// origin. If 'c' seems to be a member (more precisely, if we reached the
 /// iteration limit without being able to prove that 'c' is not a member),
 /// return 'None'
-fn escape_time(c: Complex<f64> limit: usize)-> Option<usize> {
+fn escape_time(c: Complex<f64>, limit: usize)-> Option<usize> {
     let mut z = Complex { re: 0.0, im: 0.0 };
     for i in 0..limit {
         if z.norm_sqr() > 4.0 {
@@ -17,7 +18,7 @@ fn escape_time(c: Complex<f64> limit: usize)-> Option<usize> {
         z = z * z + c;
     }
 
-    None;
+    None
 }
 
 use std::str::FromStr;
@@ -34,9 +35,9 @@ use std::str::FromStr;
 fn parse_pair<T: FromStr>(s: &str, seperator: char) -> Option<(T, T)> {
     match s.find(seperator) {
         None => None,
-        Some(indesx) => {
+        Some(index) => {
             match (T::from_str(&s[..index]), T::from_str(&s[index + 1..])) {
-                (Ok(l), Ok(r)) => Some((1, r)),
+                (Ok(l), Ok(r)) => Some((l, r)),
                 _=> None
             }
         }
@@ -56,7 +57,7 @@ fn test_parse_pair() {
 
 /// Parse a pair of floating point numbers seperated by a comma as a complex
 /// number.
-fn parse_complex(s: &str) -> Option<Complex<f64> {
+fn parse_complex(s: &str) -> Option<Complex<f64>> {
     match parse_pair(s, ',') {
         Some((re, im)) => Some(Complex { re, im}),
         None => None
